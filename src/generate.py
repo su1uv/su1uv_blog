@@ -21,7 +21,7 @@ def generate(public_dir: str, static_dir: str):
 
 
 def generate_pages_recursive(
-    dir_path_content: str, template_path: str, dest_dir_path: str
+    basepath: str, dir_path_content: str, template_path: str, dest_dir_path: str
 ):
     dir_path_content_abs: str = os.path.abspath(dir_path_content)
     template_path_abs: str = os.path.abspath(template_path)
@@ -36,13 +36,15 @@ def generate_pages_recursive(
             dest_html_abs: str = os.path.join(
                 dest_dir_path_abs, entry.replace(".md", ".html")
             )
-            generate_page(entry_abs, template_path_abs, dest_html_abs)
+            generate_page(basepath, entry_abs, template_path_abs, dest_html_abs)
         else:
             public_subdir_abs: str = os.path.join(dest_dir_path_abs, entry)
-            generate_pages_recursive(entry_abs, template_path_abs, public_subdir_abs)
+            generate_pages_recursive(
+                basepath, entry_abs, template_path_abs, public_subdir_abs
+            )
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str):
+def generate_page(basepath: str, from_path: str, template_path: str, dest_path: str):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     from_path_abs: str = os.path.abspath(from_path)
     template_path_abs: str = os.path.abspath(template_path)
@@ -61,6 +63,8 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
     title = extract_title(md)
     tmpl = tmpl.replace("{{ Title }}", title)
     tmpl = tmpl.replace("{{ Content }}", html)
+    tmpl = tmpl.replace('href="/', f'href="{basepath}')
+    tmpl = tmpl.replace('src="/', f'src="{basepath}')
     public_path = os.path.dirname(dest_path_abs)
     if not os.path.exists(public_path):
         os.makedirs(public_path)
